@@ -69,7 +69,7 @@ function RelationSvc($resource, orderly) {
     return $resource(orderly.getServiceUrl() + 'persons/current/relations');
 }
 
-function LoginSvc($q, localStorageService, $http, $rootScope, agendas, $log) {
+function LoginSvc($q, localStorageService, $http, $rootScope, orderly, $log) {
     'use strict'
     var currentUser = null;
     return {
