@@ -47,26 +47,26 @@ function OrderlyProvider() {
     
 }
 
-function PersonSvc($resource, agendas) {
-    return $resource(agendas.getServiceUrl() + 'persons/:id');
+function PersonSvc($resource, orderly) {
+    return $resource(orderly.getServiceUrl() + 'persons/:id');
 }
 
-function AssignmentSvc($resource, agendas) {
-    return $resource(agendas.getServiceUrl() + 'persons/:pid/assignments/:id');
+function AssignmentSvc($resource, orderly) {
+    return $resource(orderly.getServiceUrl() + 'persons/:pid/assignments/:id');
 }
 
-function EventSvc($resource, agendas) {
-    return $resource(agendas.getServiceUrl() + 'events/:id', null, {
+function EventSvc($resource, orderly) {
+    return $resource(orderly.getServiceUrl() + 'events/:id', null, {
            'update': { method:'PUT' }
        });
 }
 
-function DomainSvc($resource, agendas) {
-    return $resource(agendas.getServiceUrl() + 'domains/:id');
+function DomainSvc($resource, orderly) {
+    return $resource(orderly.getServiceUrl() + 'domains/:id');
 }
 
-function RelationSvc($resource, agendas) {
-    return $resource(agendas.getServiceUrl() + 'persons/current/relations');
+function RelationSvc($resource, orderly) {
+    return $resource(orderly.getServiceUrl() + 'persons/current/relations');
 }
 
 function LoginSvc($q, localStorageService, $http, $rootScope, agendas, $log) {
@@ -85,7 +85,7 @@ function LoginSvc($q, localStorageService, $http, $rootScope, agendas, $log) {
 
             if(token) {
                 authHeader = 'Basic ' + token;
-                return $http.get(agendas.getServiceUrl() + "persons/current", {headers: {'Authorization': authHeader}}).then(function(response) {
+                return $http.get(orderly.getServiceUrl() + "persons/current", {headers: {'Authorization': authHeader}}).then(function(response) {
                     alert(response.status + "/" + response.statusText);
                     if(response.status !== 200) {
                         var reason = response.data;
