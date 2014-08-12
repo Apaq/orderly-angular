@@ -1,5 +1,5 @@
 
-function PrderlyProvider() {
+function OrderlyProvider() {
     'use strict';
     /* SERVICEURL START */
     var serviceUrl = "http://192.168.87.114:8084/";
