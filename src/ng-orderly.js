@@ -1,4 +1,3 @@
-
 function OrderlyProvider() {
     'use strict';
     /* SERVICEURL START */
@@ -8,24 +7,24 @@ function OrderlyProvider() {
     this.setServiceUrl = function (url) {
         serviceUrl = url;
     };
-    
-    this.convertDateStringsToDates = function(keys, data) {
-        var key, value, i;    
+
+    this.convertDateStringsToDates = function (keys, data) {
+        var key, value, i;
         for (key in data) {
             if (data.hasOwnProperty(key)) {
                 if (keys.indexOf(key) >= 0 && angular.isString(data[key])) {
                     value = Date.parse(data[key]); // try to parse to date
                     if (value !== NaN) {
-                        data[key] = new Date(value); 
+                        data[key] = new Date(value);
                     }
                 }
-                
-                if(angular.isObject(data[key])) {
+
+                if (angular.isObject(data[key])) {
                     this.convertDateStringsToDates(keys, data[key]);
                 }
-                
-                if(angular.isArray(data[key])) {
-                    for(i=0;i<data[key].length;i++) {
+
+                if (angular.isArray(data[key])) {
+                    for (i = 0; i < data[key].length; i++) {
                         this.convertDateStringsToDates(keys, data[key][i]);
                     }
                 }
@@ -38,13 +37,20 @@ function OrderlyProvider() {
             getServiceUrl: function () {
                 return serviceUrl;
             },
-            setServiceUrl: function(url) {
+            setServiceUrl: function (url) {
                 serviceUrl = url;
             }
         };
     };
-    
-    
+
+
+}
+
+function Config($httpProvider, orderlyProvider) {
+    $httpProvider.defaults.transformResponse.push(function (responseData) {
+        orderlyProvider.convertDateStringsToDates(['startTime', 'endTime'], responseData);
+        return responseData;
+    });
 }
 
 function PersonSvc($resource, orderly) {
@@ -57,8 +63,10 @@ function AssignmentSvc($resource, orderly) {
 
 function EventSvc($resource, orderly) {
     return $resource(orderly.getServiceUrl() + 'events/:id', null, {
-           'update': { method:'PUT' }
-       });
+        'update': {
+            method: 'PUT'
+        }
+    });
 }
 
 function DomainSvc($resource, orderly) {
@@ -73,23 +81,28 @@ function LoginSvc($q, localStorageService, $http, $rootScope, orderly, $log) {
     'use strict'
     var currentUser = null;
     return {
-        authenticate: function(username, password, remember) {
+        authenticate: function (username, password, remember) {
 
-            var user = null, authHeader, token;
+            var user = null,
+                authHeader, token;
 
-            if(!username && !password) {
+            if (!username && !password) {
                 token = localStorageService.get('LoginToken');
-            } else if(username && password) {
+            } else if (username && password) {
                 token = btoa(username + ':' + password);
             }
 
-            if(token) {
+            if (token) {
                 authHeader = 'Basic ' + token;
-                return $http.get(orderly.getServiceUrl() + "persons/current", {headers: {'Authorization': authHeader}}).then(function(response) {
-                    
-                    if(response.status !== 200) {
+                return $http.get(orderly.getServiceUrl() + "persons/current", {
+                    headers: {
+                        'Authorization': authHeader
+                    }
+                }).then(function (response) {
+
+                    if (response.status !== 200) {
                         var reason = response.data;
-                        if(!reason || '' === reason) {
+                        if (!reason || '' === reason) {
                             reason = 'Unable to communicate with server';
                         }
                         localStorageService.remove('LoginToken');
@@ -97,11 +110,14 @@ function LoginSvc($q, localStorageService, $http, $rootScope, orderly, $log) {
                         return $q.reject('Unable to authenticate. Reason: ' + reason.message);
                     }
 
-                    if(remember) {
+                    if (remember) {
                         localStorageService.add('LoginToken', token);
                     }
 
-                    $rootScope.credentials = {username: username, password: password};
+                    $rootScope.credentials = {
+                        username: username,
+                        password: password
+                    };
                     user = response.data;
 
                     $log.info('Authenticated. Returning user.');
@@ -119,10 +135,10 @@ function LoginSvc($q, localStorageService, $http, $rootScope, orderly, $log) {
             }
 
         },
-        getCurrentUser: function() {
+        getCurrentUser: function () {
             return currentUser;
         },
-        deauthenticate: function() {
+        deauthenticate: function () {
             $http.defaults.headers.common['Authorization'] = undefined;
             localStorageService.remove('LoginToken');
             $rootScope.$broadcast("logout", currentUser);
@@ -134,12 +150,12 @@ function LoginSvc($q, localStorageService, $http, $rootScope, orderly, $log) {
 
 
 angular.module('orderly.services', ['ngResource', 'LocalStorageModule'])
-.provider('orderly', OrderlyProvider)
-.factory({
-    'PersonSvc': PersonSvc,
-    'AssignmentSvc': AssignmentSvc,
-    'EventSvc': EventSvc,
-    'LoginSvc': LoginSvc,
-    'RelationSvc': RelationSvc
- });
-
+    .provider('orderly', OrderlyProvider)
+    .config(Config)
+    .factory({
+        'PersonSvc': PersonSvc,
+        'AssignmentSvc': AssignmentSvc,
+        'EventSvc': EventSvc,
+        'LoginSvc': LoginSvc,
+        'RelationSvc': RelationSvc
+    });
