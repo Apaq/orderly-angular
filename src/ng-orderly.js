@@ -86,7 +86,7 @@ function LoginSvc($q, localStorageService, $http, $rootScope, orderly, $log) {
             if(token) {
                 authHeader = 'Basic ' + token;
                 return $http.get(orderly.getServiceUrl() + "persons/current", {headers: {'Authorization': authHeader}}).then(function(response) {
-                    alert(response.status + "/" + response.statusText);
+                    
                     if(response.status !== 200) {
                         var reason = response.data;
                         if(!reason || '' === reason) {
