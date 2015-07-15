@@ -75,11 +75,9 @@ function SystemSvc($http, orderly, $q) {
             };
             return $http.put(orderly.getServiceUrl() + 'system/password', data);
         },
-        regeneratePassword: function(emailAddress, securityQuestionType, securityQuestionAnswer) {
+        regeneratePassword: function(emailAddress, securityQuestionAnswer) {
             return $http.post(orderly.getServiceUrl() + 'system/password', 
-                             {emailAddress: emailAddress, 
-                              securityQuestionType: securityQuestionType, 
-                              securityQuestionAnswer:securityQuestionAnswer}).then(function(response) {
+                             {emailAddress: emailAddress, securityQuestionAnswer:securityQuestionAnswer}).then(function(response) {
                 if(response.status >= 400) {
                     throw response.data.message;
                 }
@@ -105,7 +103,7 @@ function SystemSvc($http, orderly, $q) {
 }
 
 function PersonSvc($resource, orderly) {
-    return $resource(orderly.getServiceUrl() + 'persons/:id', null, {
+    return $resource(orderly.getServiceUrl() + 'persons/:id', null,  {
         'relations': {
             method: 'GET',
             url: orderly.getServiceUrl() + 'persons/:id/relations',
@@ -114,8 +112,8 @@ function PersonSvc($resource, orderly) {
     });
 }
 
-function AssignmentSvc($resource, orderly) {
-    return $resource(orderly.getServiceUrl() + 'persons/:pid/assignments/:id');
+function TaskSvc($resource, orderly) {
+    return $resource(orderly.getServiceUrl() + 'tasks/:id');
 }
 
 function EventSvc($resource, orderly) {
@@ -123,6 +121,7 @@ function EventSvc($resource, orderly) {
         'update': {
             method: 'PUT'
         }
+        
     });
 }
 
@@ -211,7 +210,7 @@ angular.module('orderly.services', ['ngResource', 'LocalStorageModule'])
     .config(Config)
     .factory({
         'PersonSvc': PersonSvc,
-        'AssignmentSvc': AssignmentSvc,
+        'TaskSvc': TaskSvc,
         'EventSvc': EventSvc,
         'LoginSvc': LoginSvc,
         'RelationSvc': RelationSvc,
