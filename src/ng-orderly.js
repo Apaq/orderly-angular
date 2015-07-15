@@ -118,8 +118,21 @@ function TaskSvc($resource, orderly) {
 
 function EventSvc($resource, orderly) {
     return $resource(orderly.getServiceUrl() + 'events/:id', null, {
-        'update': {
-            method: 'PUT'
+        'saveFuture': {
+            method: 'PUT',
+            headers: {'X-Recurrence-Apply': 'FutureEvents'}
+        },
+        'saveAll': {
+            method: 'PUT',
+            headers: {'X-Recurrence-Apply': 'AllEvents'}
+        },
+        'removeFuture': {
+            method: 'DELETE',
+            headers: {'X-Recurrence-Apply': 'FutureEvents'}
+        },
+        'removeAll': {
+            method: 'DELETE',
+            headers: {'X-Recurrence-Apply': 'AllEvents'}
         }
         
     });
@@ -140,7 +153,7 @@ function LoginSvc($q, localStorageService, $http, $rootScope, orderly, $log) {
         authenticate: function (username, password, remember) {
 
             var user = null,
-                authHeader, token;
+                authHeader, token, headers;
 
             if (!username && !password) {
                 token = localStorageService.get('LoginToken');
@@ -148,12 +161,14 @@ function LoginSvc($q, localStorageService, $http, $rootScope, orderly, $log) {
                 token = btoa(username + ':' + password);
             }
 
-            if (token) {
+            if(token) {
                 authHeader = 'Basic ' + token;
-                return $http.get(orderly.getServiceUrl() + "persons/current", {
-                    headers: {
+                headers = {
                         'Authorization': authHeader
+                };
                     }
+            return $http.get(orderly.getServiceUrl() + "persons/current", {
+                headers: headers
                 }).then(function (response) {
 
                     if (response.status !== 200) {
@@ -185,10 +200,7 @@ function LoginSvc($q, localStorageService, $http, $rootScope, orderly, $log) {
                     $rootScope.$broadcast("login", user);
                     return user;
                 });
-            } else {
-                console.info('Unable to authenticate.');
-                return $q.reject('No credentials specified or available for authentication.');
-            }
+
 
         },
         getCurrentUser: function () {
